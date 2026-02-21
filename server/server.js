@@ -14,6 +14,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Root route for health check
+app.get('/', (req, res) => {
+    res.json({ message: 'Orbit API — System Online', status: 'active' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/profile', profileRoutes);
