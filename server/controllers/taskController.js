@@ -1,7 +1,6 @@
 const supabase = require('../config/supabase');
 const { isNonEmpty } = require('../utils/validation');
 
-// --- Get Tasks ---
 const getTasks = async (req, res) => {
     const { q, status, priority } = req.query;
 
@@ -24,7 +23,6 @@ const getTasks = async (req, res) => {
     res.json(data);
 };
 
-// --- Create Task ---
 const createTask = async (req, res) => {
     const { title, description, status, priority, due_date } = req.body;
 
@@ -52,7 +50,6 @@ const createTask = async (req, res) => {
     res.status(201).json(data);
 };
 
-// --- Update Task ---
 const updateTask = async (req, res) => {
     const { id } = req.params;
     const { title, description, status, priority, due_date } = req.body;
@@ -82,7 +79,6 @@ const updateTask = async (req, res) => {
     res.json(data);
 };
 
-// --- Delete Task ---
 const deleteTask = async (req, res) => {
     const { id } = req.params;
 

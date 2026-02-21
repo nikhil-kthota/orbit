@@ -1,35 +1,43 @@
 import { useState, useEffect } from 'react';
 import Modal from '../ui/Modal';
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
+import Button from '../ui/Button';
 
-const empty = { title: '', description: '', status: 'pending', priority: 'medium', due_date: '' };
+const STATUS_OPTS = [
+    { value: 'pending', label: '⚫ STANDBY' },
+    { value: 'in-progress', label: '🟠 IN ORBIT' },
+    { value: 'completed', label: '🟢 MISSION COMPLETE' },
+];
 
-// --- Task Modal ---
-export default function TaskModal({ isOpen, onClose, onSubmit, editTask }) {
-    const [form, setForm] = useState(empty);
+const PRIORITY_OPTS = [
+    { value: 'low', label: '▪ LOW' },
+    { value: 'medium', label: '▸ MEDIUM' },
+    { value: 'high', label: '◉ HIGH ALERT' },
+];
+
+const EMPTY = { title: '', description: '', status: 'pending', priority: 'medium', due_date: '' };
+
+export default function TaskModal({ isOpen, onClose, task, onSave }) {
+    const [form, setForm] = useState(EMPTY);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const editing = Boolean(task);
 
     useEffect(() => {
-        if (editTask) {
-            setForm({
-                title: editTask.title || '',
-                description: editTask.description || '',
-                status: editTask.status || 'pending',
-                priority: editTask.priority || 'medium',
-                due_date: editTask.due_date ? editTask.due_date.split('T')[0] : '',
-            });
-        } else {
-            setForm(empty);
-        }
+        setForm(task ? {
+            title: task.title || '',
+            description: task.description || '',
+            status: task.status || 'pending',
+            priority: task.priority || 'medium',
+            due_date: task.due_date ? task.due_date.slice(0, 10) : '',
+        } : EMPTY);
         setErrors({});
-    }, [editTask, isOpen]);
+    }, [task, isOpen]);
 
     const validate = () => {
         const e = {};
-        if (!form.title.trim()) e.title = 'Title is required';
+        if (!form.title.trim()) e.title = 'Mission title required';
         return e;
     };
 
@@ -39,69 +47,66 @@ export default function TaskModal({ isOpen, onClose, onSubmit, editTask }) {
         setErrors((p) => ({ ...p, [name]: '' }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const e2 = validate();
-        if (Object.keys(e2).length) { setErrors(e2); return; }
+    const handleSubmit = async (ev) => {
+        ev.preventDefault();
+        const e = validate();
+        if (Object.keys(e).length) { setErrors(e); return; }
         setLoading(true);
         try {
-            await onSubmit({ ...form, due_date: form.due_date || null });
+            await onSave({ ...form, ...(editing ? { id: task.id } : {}) });
             onClose();
-        } catch (err) {
-            setErrors({ title: err.message });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={editTask ? 'Edit Task' : 'New Task'}>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={editing ? 'EDIT MISSION BRIEF' : 'NEW MISSION BRIEF'}
+            size="md"
+        >
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
-                    label="Title *"
+                    label="Mission Title"
                     name="title"
                     value={form.title}
                     onChange={handleChange}
                     error={errors.title}
-                    placeholder="What needs to be done?"
-                    autoFocus
+                    placeholder="Describe your objective..."
+                    terminal
                 />
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-zinc-300">Description</label>
+                    <label className="text-xs font-mono font-medium text-[var(--silver)] tracking-widest uppercase">
+                        Mission Notes
+                    </label>
                     <textarea
                         name="description"
                         value={form.description}
                         onChange={handleChange}
-                        placeholder="Add details (optional)"
+                        placeholder="> Additional mission details..."
                         rows={3}
-                        className="w-full px-4 py-2.5 rounded-xl text-zinc-100 text-sm placeholder-zinc-500 bg-surface-800/60 border border-zinc-700/60 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none resize-none transition-all duration-200"
+                        className="w-full px-4 py-2.5 rounded-lg text-sm font-mono text-zinc-100 bg-[var(--bg-raised)] border border-[var(--silver-dim)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 outline-none resize-none transition-all placeholder:text-[var(--silver-dim)]"
                     />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                    <Select label="Status" name="status" value={form.status} onChange={handleChange}>
-                        <option value="pending">Pending</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </Select>
-                    <Select label="Priority" name="priority" value={form.priority} onChange={handleChange}>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                    </Select>
+                    <Select label="Status" name="status" value={form.status} onChange={handleChange} options={STATUS_OPTS} />
+                    <Select label="Priority" name="priority" value={form.priority} onChange={handleChange} options={PRIORITY_OPTS} />
                 </div>
                 <Input
-                    label="Due Date"
+                    label="Last Date"
                     name="due_date"
                     type="date"
                     value={form.due_date}
                     onChange={handleChange}
                 />
                 <div className="flex gap-3 pt-2">
-                    <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>
-                        Cancel
+                    <Button type="button" variant="ghost" size="md" onClick={onClose} className="flex-1">
+                        ABORT
                     </Button>
-                    <Button type="submit" variant="primary" className="flex-1" loading={loading}>
-                        {editTask ? 'Save Changes' : 'Create Task'}
+                    <Button type="submit" size="md" loading={loading} className="flex-1">
+                        {editing ? 'UPDATE MISSION' : 'LAUNCH MISSION'}
                     </Button>
                 </div>
             </form>

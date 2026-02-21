@@ -7,7 +7,6 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 
-// --- App ---
 export default function App() {
   return (
     <AuthProvider>

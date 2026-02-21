@@ -1,28 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import toast from 'react-hot-toast';
+import StarField from '../components/ui/StarField';
 
-// --- Login Page ---
+const FEATURES = [
+    {
+        icon: '◎',
+        title: 'Launch Missions',
+        desc: 'Create and assign tasks with full context — no detail left behind.',
+    },
+    {
+        icon: '◈',
+        title: 'Set Priority Levels',
+        desc: 'Mark missions from routine to critical so nothing slips through.',
+    },
+    {
+        icon: '⊕',
+        title: 'Track Live Status',
+        desc: 'Standby, In Orbit, or Complete — know exactly where things stand.',
+    },
+    {
+        icon: '◉',
+        title: 'Command the Board',
+        desc: 'Filter, search, and control your entire operation from one screen.',
+    },
+];
+
+const cardStyle = {
+    background: 'linear-gradient(135deg, rgba(30,12,3,0.97) 0%, rgba(20,8,2,0.97) 100%)',
+    boxShadow: '0 0 48px rgba(249,115,22,0.09)',
+    backdropFilter: 'blur(14px)',
+};
+
 export default function LoginPage() {
-    const { login, loading, token } = useAuth();
-    const navigate = useNavigate();
-
     const [form, setForm] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({});
+    const [authError, setAuthError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const { login, user } = useAuth();
+    const navigate = useNavigate();
 
-    if (token) {
-        navigate('/dashboard', { replace: true });
-        return null;
-    }
+    useEffect(() => {
+        if (user) navigate('/dashboard');
+    }, [user, navigate]);
 
     const validate = () => {
         const e = {};
-        if (!form.email.trim()) e.email = 'Email is required';
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email';
-        if (!form.password) e.password = 'Password is required';
+        if (!form.email.trim()) e.email = 'Email required';
+        else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email format';
+        if (!form.password) e.password = 'Password required';
         return e;
     };
 
@@ -30,101 +58,132 @@ export default function LoginPage() {
         const { name, value } = e.target;
         setForm((p) => ({ ...p, [name]: value }));
         setErrors((p) => ({ ...p, [name]: '' }));
+        setAuthError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const e2 = validate();
-        if (Object.keys(e2).length) { setErrors(e2); return; }
-
-        const result = await login(form.email, form.password);
-        if (result.success) {
-            toast.success('Welcome back!');
+        const errs = validate();
+        if (Object.keys(errs).length) { setErrors(errs); return; }
+        setLoading(true);
+        try {
+            await login(form.email, form.password);
+            toast.success('UPLINK ESTABLISHED', {
+                style: { fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.1em', background: '#0E0E18', color: '#A8FF78', border: '1px solid rgba(168,255,120,0.25)', borderRadius: '10px' },
+                icon: '◉',
+            });
             navigate('/dashboard');
-        } else {
-            toast.error(result.error);
-            setErrors({ password: result.error });
+        } catch (err) {
+            setAuthError(err.message || 'Invalid credentials — check your email and password.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex bg-surface-950">
-            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400" />
-                <div className="absolute inset-0 opacity-20"
-                    style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}
-                />
-                <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
-                    <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-8 shadow-lg">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                        </svg>
-                    </div>
-                    <h1 className="text-5xl font-bold mb-4 leading-tight">Orbit</h1>
-                    <p className="text-orange-100 text-xl font-light leading-relaxed mb-8 max-w-sm">
-                        Your tasks, organized. Your goals, within reach.
-                    </p>
-                    <div className="space-y-4">
-                        {['Organize tasks effortlessly', 'Track progress in real time', 'Stay focused on what matters'].map((f) => (
-                            <div key={f} className="flex items-center gap-3">
-                                <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg>
-                                </div>
-                                <span className="text-orange-50 text-sm">{f}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+        <div className="relative min-h-screen bg-[var(--bg-base)] dot-grid overflow-hidden flex flex-col">
+            <StarField />
 
-            <div className="flex-1 flex flex-col items-center justify-center p-8">
-                <div className="w-full max-w-md animate-slide-up">
-                    <div className="text-center mb-8">
-                        <div className="inline-flex w-12 h-12 rounded-2xl bg-brand flex items-center justify-center mb-4 shadow-brand">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                            </svg>
+            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 70% 50% at 30% 60%, rgba(249,115,22,0.07) 0%, transparent 70%)' }} />
+
+            <header
+                className="relative z-10 flex items-center justify-between h-auto sm:h-14 px-5 py-3 sm:py-0 flex-shrink-0"
+                style={{
+                    background: 'linear-gradient(90deg, rgba(30,12,3,0.97) 0%, rgba(20,8,2,0.97) 100%)',
+                    borderBottom: '1px solid rgba(249,115,22,0.30)',
+                    boxShadow: '0 1px 24px rgba(249,115,22,0.07)',
+                    backdropFilter: 'blur(12px)',
+                }}
+            >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                    <div className="flex items-center gap-2">
+                        <div className="relative w-7 h-7 flex items-center justify-center flex-shrink-0">
+                            <span className="font-display font-bold text-lg text-[var(--accent)] relative z-10">O</span>
+                            <div
+                                className="absolute rounded-full pointer-events-none"
+                                style={{ border: '1px dashed rgba(249,115,22,0.5)', animation: 'rotateOrbit 5s linear infinite', inset: '-5px' }}
+                            />
                         </div>
-                        <h2 className="text-2xl font-bold text-zinc-100">Welcome back</h2>
-                        <p className="text-silver text-sm mt-1">Sign in to your Orbit account</p>
+                        <span className="font-display font-bold text-base text-zinc-100 tracking-[0.2em]">ORBIT</span>
                     </div>
-
-                    <div className="bg-surface-800 border border-zinc-700/50 rounded-2xl p-8 shadow-card">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <Input
-                                label="Email"
-                                name="email"
-                                type="email"
-                                value={form.email}
-                                onChange={handleChange}
-                                error={errors.email}
-                                placeholder="you@example.com"
-                                autoComplete="email"
-                            />
-                            <Input
-                                label="Password"
-                                name="password"
-                                type="password"
-                                value={form.password}
-                                onChange={handleChange}
-                                error={errors.password}
-                                placeholder="Your password"
-                                autoComplete="current-password"
-                            />
-                            <Button type="submit" className="w-full mt-2" size="lg" loading={loading}>
-                                Sign In
-                            </Button>
-                        </form>
-                    </div>
-
-                    <p className="text-center text-sm text-silver mt-6">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-brand hover:text-brand-hover font-medium transition-colors">
-                            Create one
-                        </Link>
+                    <p className="text-[10px] font-mono text-[var(--silver-dim)] tracking-[0.18em] uppercase sm:border-l sm:border-orange-500/20 sm:pl-3">
+                        Track tasks. Set priorities.
                     </p>
                 </div>
-            </div>
+            </header>
+
+            <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-10">
+                <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
+
+                    <div className="w-full lg:w-1/2 flex flex-col order-2 lg:order-1">
+                        <p className="text-[10px] font-mono text-[var(--accent)] tracking-[0.3em] uppercase mb-4">
+                            ◉ What you can do
+                        </p>
+                        <h2
+                            className="font-display font-black text-5xl lg:text-6xl xl:text-7xl text-zinc-100 leading-[0.95] mb-8"
+                            style={{ textShadow: '0 0 60px rgba(249,115,22,0.2)' }}
+                        >
+                            Mission<br />
+                            <span style={{ WebkitTextStroke: '1.5px rgba(249,115,22,0.7)', color: 'transparent' }}>
+                                Control.
+                            </span>
+                        </h2>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+                            {FEATURES.map((f, i) => (
+                                <div key={i}>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <span className="text-[var(--accent)] text-base">{f.icon}</span>
+                                        <span className="text-xs font-mono font-bold text-zinc-200 tracking-wider uppercase">{f.title}</span>
+                                    </div>
+                                    <p className="text-xs font-mono text-[var(--silver)] leading-relaxed">{f.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="w-full lg:w-5/12 order-1 lg:order-2">
+                        <div className="rounded-2xl p-7 border border-orange-500/20 animate-slide-up" style={cardStyle}>
+                            <div className="mb-6 flex items-center gap-2">
+                                <span className="text-[var(--accent)] text-sm">◈</span>
+                                <span className="font-mono font-bold text-xs tracking-[0.2em] uppercase text-[var(--silver)]">
+                                    Commander Auth
+                                </span>
+                            </div>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <Input label="Email" name="email" type="email" value={form.email} onChange={handleChange} error={errors.email} placeholder="commander@orbit.dev" terminal />
+                                <Input label="Password" name="password" type="password" value={form.password} onChange={handleChange} error={errors.password} placeholder="••••••••" terminal />
+
+                                {authError && (
+                                    <div
+                                        className="flex items-start gap-2.5 px-3.5 py-3 rounded-lg border text-xs font-mono"
+                                        style={{
+                                            background: 'rgba(239,68,68,0.07)',
+                                            borderColor: 'rgba(239,68,68,0.35)',
+                                            color: '#FCA5A5',
+                                        }}
+                                    >
+                                        <span className="flex-shrink-0 mt-px" style={{ color: '#F87171' }}>◈</span>
+                                        <span className="tracking-wide">{authError}</span>
+                                    </div>
+                                )}
+
+                                <Button type="submit" size="full" loading={loading} className="mt-2">
+                                    {loading ? 'ESTABLISHING UPLINK...' : 'AUTHENTICATE →'}
+                                </Button>
+                            </form>
+                            <p className="text-center mt-5 text-[10px] font-mono text-[var(--silver-dim)]">
+                                NO ACCESS?{' '}
+                                <Link to="/register" className="text-[var(--accent)] hover:underline tracking-widest uppercase">
+                                    SIGNUP FOR CLEARANCE
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+
         </div>
     );
 }
+

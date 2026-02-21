@@ -1,7 +1,21 @@
 const supabase = require('../config/supabase');
 const { isNonEmpty } = require('../utils/validation');
 
-// --- Get Profile ---
+const deleteAccount = async (req, res) => {
+    const userId = req.user.userId;
+
+    // Delete tasks first (foreign key safety)
+    await supabase.from('tasks').delete().eq('user_id', userId);
+
+    const { error } = await supabase.from('users').delete().eq('id', userId);
+
+    if (error) {
+        return res.status(500).json({ error: 'Failed to delete account' });
+    }
+
+    res.json({ message: 'Account terminated' });
+};
+
 const getProfile = async (req, res) => {
     const { data: user, error } = await supabase
         .from('users')
@@ -16,7 +30,6 @@ const getProfile = async (req, res) => {
     res.json(user);
 };
 
-// --- Update Profile ---
 const updateProfile = async (req, res) => {
     const { name, bio } = req.body;
 
@@ -38,4 +51,4 @@ const updateProfile = async (req, res) => {
     res.json(user);
 };
 
-module.exports = { getProfile, updateProfile };
+module.exports = { getProfile, updateProfile, deleteAccount };

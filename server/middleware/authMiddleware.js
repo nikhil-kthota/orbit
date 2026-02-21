@@ -1,6 +1,5 @@
 const { verifyToken } = require('../utils/jwt');
 
-// --- JWT Auth Middleware ---
 const protect = (req, res, next) => {
     const authHeader = req.headers.authorization;
 

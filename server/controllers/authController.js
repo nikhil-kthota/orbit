@@ -3,7 +3,6 @@ const supabase = require('../config/supabase');
 const { signToken } = require('../utils/jwt');
 const { isValidEmail, isStrongPassword, isNonEmpty } = require('../utils/validation');
 
-// --- Register ---
 const register = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -43,7 +42,6 @@ const register = async (req, res) => {
     res.status(201).json({ token, user });
 };
 
-// --- Login ---
 const login = async (req, res) => {
     const { email, password } = req.body;
 

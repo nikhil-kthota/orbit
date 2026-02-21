@@ -5,44 +5,26 @@ import {
     getStoredUser, setStoredUser, removeStoredUser,
 } from '../utils/tokenHelpers';
 
-// --- Auth Context ---
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(getStoredUser());
     const [token, setTokenState] = useState(getToken());
-    const [loading, setLoading] = useState(false);
 
     const login = async (email, password) => {
-        setLoading(true);
-        try {
-            const data = await loginUser({ email, password });
-            setToken(data.token);
-            setStoredUser(data.user);
-            setTokenState(data.token);
-            setUser(data.user);
-            return { success: true };
-        } catch (err) {
-            return { success: false, error: err.message };
-        } finally {
-            setLoading(false);
-        }
+        const data = await loginUser({ email, password });
+        setToken(data.token);
+        setStoredUser(data.user);
+        setTokenState(data.token);
+        setUser(data.user);
     };
 
     const register = async (name, email, password) => {
-        setLoading(true);
-        try {
-            const data = await registerUser({ name, email, password });
-            setToken(data.token);
-            setStoredUser(data.user);
-            setTokenState(data.token);
-            setUser(data.user);
-            return { success: true };
-        } catch (err) {
-            return { success: false, error: err.message };
-        } finally {
-            setLoading(false);
-        }
+        const data = await registerUser({ name, email, password });
+        setToken(data.token);
+        setStoredUser(data.user);
+        setTokenState(data.token);
+        setUser(data.user);
     };
 
     const logout = () => {
@@ -58,7 +40,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, register, logout, refreshUser }}>
+        <AuthContext.Provider value={{ user, token, login, register, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

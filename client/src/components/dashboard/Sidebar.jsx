@@ -1,99 +1,85 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getInitials } from '../../utils/helpers';
 
-const nav = [
-    {
-        to: '/dashboard',
-        icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
-            </svg>
-        ),
-        label: 'Dashboard',
-    },
-    {
-        to: '/profile',
-        icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
-            </svg>
-        ),
-        label: 'Profile',
-    },
+const NAV = [
+    { to: '/dashboard', label: 'COMMAND', icon: '⬡' },
+    { to: '/profile', label: 'DOSSIER', icon: '◎' },
 ];
 
-// --- Sidebar ---
-export default function Sidebar({ collapsed, onToggle }) {
-    const { logout } = useAuth();
+export default function Sidebar() {
+    const [expanded, setExpanded] = useState(false);
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+    const handleLogout = () => { logout(); navigate('/login'); };
 
     return (
         <aside
-            className={`
-        flex flex-col h-screen bg-surface-900 border-r border-zinc-800/60 transition-all duration-300 ease-in-out flex-shrink-0
-        ${collapsed ? 'w-16' : 'w-60'}
-      `}
+            onMouseEnter={() => setExpanded(true)}
+            onMouseLeave={() => setExpanded(false)}
+            className={[
+                'relative flex flex-col h-full z-20 transition-all duration-300 ease-in-out flex-shrink-0',
+                'bg-[var(--bg-panel)] border-r border-[var(--silver-dim)]',
+                expanded ? 'w-52' : 'w-14',
+            ].join(' ')}
         >
-            <div className={`flex items-center h-16 px-4 border-b border-zinc-800/60 ${collapsed ? 'justify-center' : 'gap-3'}`}>
-                <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center flex-shrink-0 shadow-brand-sm">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                    </svg>
+            <div className="flex items-center gap-3 px-3.5 py-5 border-b border-[var(--silver-dim)] overflow-hidden">
+                <div className="relative flex-shrink-0 w-7 h-7 flex items-center justify-center">
+                    <span className="font-display font-bold text-lg text-[var(--accent)] leading-none select-none" style={{ position: 'relative', zIndex: 1 }}>
+                        O
+                    </span>
+                    <div
+                        className="absolute inset-[-6px] rounded-full pointer-events-none"
+                        style={{ border: '1px dashed rgba(249,115,22,0.45)', animation: 'rotateOrbit 4s linear infinite', transformOrigin: 'center' }}
+                    />
+                    <div className="logo-orbit-dot" style={{ width: '5px', height: '5px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }} />
                 </div>
-                {!collapsed && (
-                    <span className="font-bold text-lg text-zinc-100 tracking-tight">Orbit</span>
+                {expanded && (
+                    <span className="font-display font-bold text-sm tracking-[0.22em] text-zinc-100 whitespace-nowrap animate-fade-in">
+                        ORBIT
+                    </span>
                 )}
             </div>
 
-            <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
-                {nav.map((item) => (
+            <nav className="flex-1 py-4 space-y-1 px-2">
+                {NAV.map(({ to, label, icon }) => (
                     <NavLink
-                        key={item.to}
-                        to={item.to}
-                        end
-                        className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group
-              ${isActive
-                                ? 'bg-brand-light text-brand font-medium'
-                                : 'text-silver hover:text-zinc-100 hover:bg-surface-700'
-                            }
-              ${collapsed ? 'justify-center' : ''}`
-                        }
+                        key={to}
+                        to={to}
+                        className={({ isActive }) => [
+                            'flex items-center gap-3 px-2.5 py-2.5 rounded-lg text-xs font-mono font-semibold tracking-widest uppercase transition-all duration-200',
+                            'overflow-hidden whitespace-nowrap',
+                            isActive
+                                ? 'nav-active-trail text-[var(--accent)] bg-[var(--accent)]/8'
+                                : 'text-[var(--silver)] hover:text-zinc-200 hover:bg-[var(--bg-raised)]',
+                        ].join(' ')}
                     >
-                        <span className="flex-shrink-0">{item.icon}</span>
-                        {!collapsed && <span className="text-sm">{item.label}</span>}
+                        <span className="text-base flex-shrink-0 w-5 text-center">{icon}</span>
+                        {expanded && <span className="animate-fade-in">{label}</span>}
                     </NavLink>
                 ))}
             </nav>
 
-            <div className="p-2 border-t border-zinc-800/60 space-y-1">
-                <button
-                    onClick={onToggle}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-silver hover:text-zinc-100 hover:bg-surface-700 transition-all duration-200 ${collapsed ? 'justify-center' : ''}`}
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        {collapsed
-                            ? <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
-                            : <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
-                        }
-                    </svg>
-                    {!collapsed && <span className="text-sm">Collapse</span>}
-                </button>
-
+            <div className="border-t border-[var(--silver-dim)] px-2 py-3">
+                <div className="flex items-center gap-3 px-2.5 py-2 mb-1 overflow-hidden">
+                    <div className="w-6 h-6 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                        {getInitials(user?.name || 'U')}
+                    </div>
+                    {expanded && (
+                        <div className="min-w-0 animate-fade-in">
+                            <p className="text-[10px] font-mono font-semibold text-zinc-200 truncate tracking-wide">{user?.name}</p>
+                            <p className="text-[9px] text-[var(--silver-dim)] font-mono truncate">{user?.email}</p>
+                        </div>
+                    )}
+                </div>
                 <button
                     onClick={handleLogout}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 transition-all duration-200 ${collapsed ? 'justify-center' : ''}`}
+                    className="flex items-center gap-3 w-full px-2.5 py-2 rounded-lg text-xs font-mono font-semibold tracking-widest uppercase text-[var(--silver)] hover:text-red-400 hover:bg-red-500/8 transition-all duration-200 overflow-hidden"
                 >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
-                    </svg>
-                    {!collapsed && <span className="text-sm font-medium">Logout</span>}
+                    <span className="text-base flex-shrink-0 w-5 text-center">⏻</span>
+                    {expanded && <span className="animate-fade-in">EJECT</span>}
                 </button>
             </div>
         </aside>

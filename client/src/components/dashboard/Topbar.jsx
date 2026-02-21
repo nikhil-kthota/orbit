@@ -3,69 +3,89 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
 
-// --- Topbar ---
-export default function Topbar({ title }) {
+export default function Topbar({ title, greeting, backTo, backLabel }) {
     const { user, logout } = useAuth();
-    const navigate = useNavigate();
-    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [open, setOpen] = useState(false);
     const ref = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const handler = (e) => {
-            if (ref.current && !ref.current.contains(e.target)) {
-                setDropdownOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
+        const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        document.addEventListener('mousedown', close);
+        return () => document.removeEventListener('mousedown', close);
     }, []);
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
-
     return (
-        <header className="h-16 bg-surface-900 border-b border-zinc-800/60 flex items-center justify-between px-6 flex-shrink-0">
-            <h1 className="text-lg font-semibold text-zinc-100">{title}</h1>
+        <header
+            className="flex items-center justify-between h-14 px-5 flex-shrink-0 relative z-30"
+            style={{
+                background: 'linear-gradient(90deg, rgba(30,12,3,0.97) 0%, rgba(20,8,2,0.97) 100%)',
+                borderBottom: '1px solid rgba(249,115,22,0.30)',
+                boxShadow: '0 1px 24px rgba(249,115,22,0.07)',
+                backdropFilter: 'blur(12px)',
+            }}
+        >
+            <div className="flex items-center gap-3">
+                {backTo && (
+                    <button
+                        onClick={() => navigate(backTo)}
+                        className="flex items-center gap-1.5 text-[var(--silver)] hover:text-[var(--accent)] transition-colors font-mono text-xs tracking-widest uppercase group"
+                    >
+                        <span className="text-base group-hover:-translate-x-0.5 transition-transform">←</span>
+                        <span>{backLabel || 'BACK'}</span>
+                    </button>
+                )}
+                {backTo && <span className="text-[var(--silver-dim)] text-xs">|</span>}
+                <div className="flex flex-col justify-center">
+                    {greeting ? (
+                        <span className="font-display font-bold text-sm text-zinc-100 typewriter-cursor">{greeting}</span>
+                    ) : (
+                        <span className="font-display font-bold text-sm tracking-widest uppercase text-zinc-100">
+                            ◈ {title}
+                        </span>
+                    )}
+                    <span className="text-[9px] font-mono text-[var(--silver-dim)] tracking-[0.2em] uppercase">
+                        ORBIT / {(title || 'COMMAND').toUpperCase()}
+                    </span>
+                </div>
+            </div>
 
             <div className="relative" ref={ref}>
                 <button
-                    onClick={() => setDropdownOpen((p) => !p)}
-                    className="flex items-center gap-3 py-1.5 px-2 rounded-xl hover:bg-surface-700 transition-all duration-200"
+                    onClick={() => setOpen((p) => !p)}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg hover:bg-[var(--bg-raised)] transition-colors border border-transparent hover:border-[var(--silver-dim)]"
                 >
-                    <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-xs font-bold shadow-brand-sm">
-                        {getInitials(user?.name || 'U')}
+                    <div className="orbital-ring-wrap">
+                        <div className="w-7 h-7 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-[10px] font-bold relative z-10">
+                            {getInitials(user?.name || 'U')}
+                        </div>
+                        <div className="orbital-ring-track" style={{ inset: '-6px', animation: 'rotateOrbit 6s linear infinite' }} />
+                        <div className="orbital-ring-dot" style={{ top: '50%', left: '50%', animation: 'orbitDot 6s linear infinite' }} />
                     </div>
-                    <div className="text-left hidden sm:block">
-                        <p className="text-sm font-medium text-zinc-200 leading-tight">{user?.name}</p>
-                        <p className="text-xs text-silver leading-tight">{user?.email}</p>
+                    <div className="hidden sm:flex flex-col items-start">
+                        <span className="text-xs font-display font-semibold text-zinc-200 leading-none">{user?.name}</span>
+                        <span className="text-[9px] font-mono text-[var(--accent)] tracking-widest uppercase leading-none mt-0.5">COMMANDER</span>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-silver">
-                        <path d="M6 9l6 6 6-6" />
-                    </svg>
+                    <span className="text-[var(--silver)] text-xs font-mono ml-1">▾</span>
                 </button>
 
-                {dropdownOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-surface-800 border border-zinc-700/60 rounded-xl shadow-card z-50 overflow-hidden animate-scale-in">
+                {open && (
+                    <div className="absolute right-0 top-full mt-2 w-44 bg-[var(--bg-panel)] border border-[var(--silver-dim)] rounded-xl shadow-card animate-scale-in overflow-hidden z-50">
+                        <div className="p-3 border-b border-[var(--silver-dim)]">
+                            <p className="text-[10px] font-mono text-[var(--silver-dim)] tracking-widest uppercase mb-0.5">UPLINK</p>
+                            <p className="text-xs font-mono text-zinc-300 truncate">{user?.email}</p>
+                        </div>
                         <button
-                            onClick={() => { navigate('/profile'); setDropdownOpen(false); }}
-                            className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-zinc-300 hover:bg-surface-700 hover:text-zinc-100 transition-all"
+                            onClick={() => { setOpen(false); navigate('/profile'); }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-mono text-[var(--silver)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/8 transition-colors tracking-widest uppercase"
                         >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
-                            </svg>
-                            My Profile
+                            ◎ View Dossier
                         </button>
-                        <div className="border-t border-zinc-700/60" />
                         <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-all"
+                            onClick={() => { logout(); navigate('/login'); }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-mono text-[var(--silver)] hover:text-red-400 hover:bg-red-500/8 transition-colors tracking-widest uppercase border-t border-[var(--silver-dim)]"
                         >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
-                            </svg>
-                            Sign Out
+                            ⏻ Eject
                         </button>
                     </div>
                 )}

@@ -1,20 +1,26 @@
-// --- Badge Component ---
-const config = {
-    pending: { bg: 'bg-zinc-700/60', text: 'text-zinc-300', dot: 'bg-zinc-400', label: 'Pending' },
-    'in-progress': { bg: 'bg-blue-500/15', text: 'text-blue-300', dot: 'bg-blue-400', label: 'In Progress' },
-    completed: { bg: 'bg-emerald-500/15', text: 'text-emerald-300', dot: 'bg-emerald-400', label: 'Completed' },
-    low: { bg: 'bg-zinc-700/60', text: 'text-zinc-300', dot: 'bg-zinc-400', label: 'Low' },
-    medium: { bg: 'bg-amber-500/15', text: 'text-amber-300', dot: 'bg-amber-400', label: 'Medium' },
-    high: { bg: 'bg-red-500/15', text: 'text-red-300', dot: 'bg-red-400', label: 'High' },
-    overdue: { bg: 'bg-red-500/20', text: 'text-red-400', dot: 'bg-red-500', label: 'Overdue' },
+const STATUS = {
+    'pending': { label: 'STANDBY', cls: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/25' },
+    'in-progress': { label: 'IN ORBIT', cls: 'text-[var(--accent)] bg-[var(--accent)]/10 border-[var(--accent)]/25' },
+    'completed': { label: 'MISSION COMPLETE', cls: 'text-green-400 bg-green-400/10 border-green-400/25' },
 };
 
-export default function Badge({ type }) {
-    const c = config[type] || config.pending;
+const PRIORITY = {
+    'high': { label: 'HIGH ALERT', cls: 'text-red-400 bg-red-400/10 border-red-400/25' },
+    'medium': { label: 'MEDIUM', cls: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/25' },
+    'low': { label: 'LOW', cls: 'text-[var(--silver)] bg-[var(--silver)]/10 border-[var(--silver)]/20' },
+};
+
+export default function Badge({ type, value }) {
+    const map = type === 'status' ? STATUS : PRIORITY;
+    const item = map[value] || { label: value?.toUpperCase(), cls: 'text-zinc-400 bg-zinc-400/10 border-zinc-400/20' };
+
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-            {c.label}
+        <span className={[
+            'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold',
+            'border tracking-widest uppercase',
+            item.cls,
+        ].join(' ')}>
+            {item.label}
         </span>
     );
 }

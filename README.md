@@ -1,51 +1,46 @@
-# Orbit
+# Orbit — Mission Control
 
-A scalable task management web application with JWT authentication and a full CRUD dashboard. Built with React.js, Node.js/Express, and Supabase.
+Orbit is a high-performance mission management platform designed for commanders who need precision, speed, and a sleek tactical interface. Built on a modern full-stack architecture, Orbit provides a centralized dashboard for tracking critical tasks (missions) with a focus on premium aesthetics and robust security.
 
-## Tech Stack
+---
+
+## ◈ Premium Aesthetics
+Orbit isn't just a task manager; it's a command center.
+- **Glassmorphism UI**: Deep gradients, backdrop blurs, and subtle orange glows create a futuristic "Mission Control" feel.
+- **Micro-animations**: Typewriter greetings, hexagon count-up animations, and smooth slide-up transitions.
+- **Thematic Consistency**: A cohesive "Dark Orange & Silver" palette used across headers, sidebars, and interactive cards.
+- **Responsive Command**: Seamlessly scales from desktop wide-screens to mobile field units.
+
+## ⬢ Core Features
+- **Secure Uplink**: JWT-based authentication with bcrypt hashing and custom auth error handling.
+- **Mission Briefings**: Create, edit, and track missions with titles, notes, and priority levels.
+- **Tactical Dashboard**:
+  - Live stat cards (Total, Completed, In Orbit, Overdue).
+  - Advanced filtering (Search, Status, Priority).
+  - Visual density — see your entire operation at a glance.
+- **Commander Profiles**: Manage your call sign, bio, and clearance levels (Danger Zone for account termination).
+- **Proactive Security**: Hardened with Supabase Row-Level Security (RLS) to ensure data isolation.
+
+---
+
+## ⚙ Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React.js (Vite), React Router v6, Tailwind CSS v3 |
-| Backend | Node.js, Express.js |
-| Database | Supabase (PostgreSQL) |
-| Auth | JWT + bcrypt |
+| **Frontend** | React (Vite), Tailwind CSS, React Router v7, Axios, Lucide Icons |
+| **Backend** | Node.js, Express.js |
+| **Database** | Supabase (PostgreSQL) |
+| **Auth** | Stateless JWT + bcrypt hashing |
 
-## Features
+---
 
-- Register / Login / Logout with JWT authentication
-- Protected routes — dashboard requires login
-- Create, read, update, delete tasks
-- Search tasks by title, filter by status and priority
-- Overdue task detection
-- User profile view and edit
-- Collapsible sidebar, animated stat cards, toast notifications
-- Dark orange/grey/silver theme
+## 🚀 Getting Started
 
-## Project Structure
-
-```
-AUTH AND DASH/
-├── client/          # React frontend
-├── server/          # Node/Express backend
-├── docs/
-│   ├── Orbit.postman_collection.json
-│   └── SCALING.md
-└── README.md
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js >= 18
-- A Supabase project
-
-### 1. Database Setup
-
-Run this SQL in your Supabase project SQL editor:
+### 1. Database Setup (Supabase)
+Run the following SQL in your Supabase SQL Editor to initialize the schema and security policies:
 
 ```sql
+-- Create Users Table
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -55,6 +50,7 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create Tasks Table
 CREATE TABLE tasks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -65,56 +61,54 @@ CREATE TABLE tasks (
   due_date DATE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Enable Row-Level Security (RLS)
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Block unauthorized direct access (all traffic flows through backend API)
+CREATE POLICY "tasks_api_access" ON tasks FOR ALL TO service_role USING (true);
+CREATE POLICY "users_api_access" ON users FOR ALL TO service_role USING (true);
 ```
 
-### 2. Backend Setup
-
+### 2. Backend Config
 ```bash
 cd server
 cp .env.example .env
-```
-
-Fill in `.env`:
-
-```
-PORT=5000
-CLIENT_URL=http://localhost:5173
-JWT_SECRET=your_random_secret_here
-SUPABASE_URL=https://xxxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-```
-
-```bash
 npm install
-npm run dev
 ```
+Update `.env` with your secrets and Supabase credentials. Use `SUPABASE_SERVICE_ROLE_KEY` to allow the API to bypass RLS for its own logic.
 
-### 3. Frontend Setup
-
+### 3. Frontend Config
 ```bash
 cd client
 cp .env.example .env
 npm install
-npm run dev
 ```
+Update `VITE_API_URL` to point to your backend (default: `http://localhost:5000`).
 
-Open [http://localhost:5173](http://localhost:5173)
+### 4. Launch
+- **Server**: `npm run dev` (Runs on port 5000)
+- **Client**: `npm run dev` (Runs on port 5173)
 
-## API Reference
+---
 
-Import `docs/Orbit.postman_collection.json` into Postman. The Login request automatically stores the JWT token as a collection variable for subsequent requests.
+## 🔒 Security Architecture
+Orbit implements a hybrid security model:
+1. **Stateless JWT**: Authentication is handled locally by the Express server, making the system easy to scale horizontally.
+2. **Service Role Access**: The backend communicates with Supabase using a service role key, acting as the ultimate authority for data validation.
+3. **Database Guardrails**: RLS is strictly enabled. Direct table access via the Supabase REST API is blocked for `anon` and `authenticated` roles, forcing all data through our secure backend pipeline.
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/register` | — | Register a new user |
-| POST | `/api/auth/login` | — | Login and receive JWT |
-| GET | `/api/profile` | ✓ | Get authenticated user profile |
-| PUT | `/api/profile` | ✓ | Update name and bio |
-| GET | `/api/tasks` | ✓ | List tasks (supports `?q=`, `?status=`, `?priority=`) |
-| POST | `/api/tasks` | ✓ | Create a task |
-| PUT | `/api/tasks/:id` | ✓ | Update a task |
-| DELETE | `/api/tasks/:id` | ✓ | Delete a task |
+---
 
-## Scaling
-
-See [docs/SCALING.md](docs/SCALING.md) for the full production scaling plan.
+## 🛠 Project Structure
+```text
+ORBIT/
+├── client/           # React mission control interface
+└── server/           # Node.js command API
+    ├── config/       # Supabase client config
+    ├── controllers/  # Business logic (Auth, Tasks, Profile)
+    ├── middleware/   # JWT verification guard
+    ├── routes/       # API endpoint definitions
+    └── utils/        # Generic helpers
+```
