@@ -1,4 +1,4 @@
-# Orbit — Mission Control
+# Orbit - Mission Control
 
 Orbit is a high-performance mission management platform designed for commanders who need precision, speed, and a sleek tactical interface. Built on a modern full-stack architecture, Orbit provides a centralized dashboard for tracking critical tasks (missions) with a focus on premium aesthetics and robust security.
 
@@ -17,7 +17,7 @@ Orbit isn't just a task manager; it's a command center.
 - **Tactical Dashboard**:
   - Live stat cards (Total, Completed, In Orbit, Overdue).
   - Advanced filtering (Search, Status, Priority).
-  - Visual density — see your entire operation at a glance.
+  - Visual density - see your entire operation at a glance.
 - **Commander Profiles**: Manage your call sign, bio, and clearance levels (Danger Zone for account termination).
 - **Proactive Security**: Hardened with Supabase Row-Level Security (RLS) to ensure data isolation.
 
