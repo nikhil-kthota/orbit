@@ -46,11 +46,11 @@ export default function TaskCard({ task, onEdit, onDelete, onComplete }) {
                     )}
                 </div>
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     {!isComplete && (
                         <button
                             onClick={handleComplete}
-                            className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--silver)] hover:text-green-400 hover:bg-green-500/10 transition-colors text-xs font-mono"
+                            className="w-9 h-9 rounded-md flex items-center justify-center text-[var(--silver)] hover:text-green-400 hover:bg-green-500/10 transition-colors text-base font-mono"
                             title="Mark mission complete"
                         >
                             ✓
@@ -58,14 +58,14 @@ export default function TaskCard({ task, onEdit, onDelete, onComplete }) {
                     )}
                     <button
                         onClick={handleEdit}
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--silver)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors text-xs font-mono"
+                        className="w-9 h-9 rounded-md flex items-center justify-center text-[var(--silver)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors text-base font-mono"
                         title="Edit mission"
                     >
                         ✎
                     </button>
                     <button
                         onClick={() => onDelete(task.id)}
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--silver)] hover:text-red-400 hover:bg-red-500/10 transition-colors text-xs font-mono"
+                        className="w-9 h-9 rounded-md flex items-center justify-center text-[var(--silver)] hover:text-red-400 hover:bg-red-500/10 transition-colors text-base font-mono"
                         title="Abort mission"
                     >
                         ✕

@@ -108,18 +108,20 @@ export default function DashboardPage() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <OrbitSelect
-                            value={statusFilter}
-                            onChange={setStatusFilter}
-                            options={STATUS_OPTS}
-                        />
-                        <OrbitSelect
-                            value={priorityFilter}
-                            onChange={setPriorityFilter}
-                            options={PRIORITY_OPTS}
-                        />
-                        <Button onClick={openNew} size="md" className="flex-shrink-0 whitespace-nowrap">
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <OrbitSelect
+                                value={statusFilter}
+                                onChange={setStatusFilter}
+                                options={STATUS_OPTS}
+                            />
+                            <OrbitSelect
+                                value={priorityFilter}
+                                onChange={setPriorityFilter}
+                                options={PRIORITY_OPTS}
+                            />
+                        </div>
+                        <Button onClick={openNew} size="md" className="w-full sm:w-auto flex-shrink-0 whitespace-nowrap">
                             ＋ NEW MISSION
                         </Button>
                     </div>
