@@ -97,8 +97,8 @@ export default function DashboardPage() {
                     <StatsCard label="Overdue" value={overdue.length} accent="overdue" />
                 </div>
 
-                <div className="space-y-2">
-                    <div className="cmd-search-wrap w-full">
+                <div className="flex flex-col lg:flex-row items-center gap-3">
+                    <div className="cmd-search-wrap w-full lg:flex-1">
                         <span className="cmd-prefix font-mono text-[var(--accent)] text-sm select-none">&gt;_</span>
                         <input
                             value={search}
@@ -108,7 +108,7 @@ export default function DashboardPage() {
                         />
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <OrbitSelect
                                 value={statusFilter}
